@@ -8,24 +8,34 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f0f4ff',
-          100: '#dce6ff',
-          200: '#bfd2fe',
-          300: '#93b4fd',
-          400: '#608cf9',
-          500: '#3b67f1',
-          600: '#254ce5',
-          700: '#1d39cc',
-          800: '#1e3a8a', // Stitch primary academic navy/indigo
-          900: '#00236f', // Stitch deep institutional navy
-          950: '#0b163a',
+          50: '#f0f5fc',
+          100: '#e0ecf8',
+          200: '#c2dbf2',
+          300: '#94c1e9',
+          400: '#5f9fdd',
+          500: '#387fd0',
+          600: '#2664b4',
+          700: '#1e4f93',
+          800: '#194279',
+          900: '#0f2e5c', // New Era Royal Navy Blue
+          950: '#0a1d3b',
         },
-        slate: {
-          850: '#131b2e', // Stitch on_background / on_surface
+        gold: {
+          50: '#faf7ed',
+          100: '#f3ebd3',
+          200: '#e7d6a5',
+          300: '#d9bc70',
+          400: '#caa346',
+          500: '#b38a2e', // Academic Gold Accent
+          600: '#9c7324',
+          700: '#7d571f',
+          800: '#68471f',
+          900: '#573c1d',
         }
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Cinzel"', 'Georgia', 'serif'],
         mono: ['"JetBrains Mono"', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       boxShadow: {

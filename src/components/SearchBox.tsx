@@ -132,14 +132,14 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
 
   const getPlaceholder = () => {
     switch (searchType) {
+      case 'name':
+        return 'Enter student name (e.g. Aadhya, Aarav, Rahul)';
       case 'studentNumber':
         return isAlphanumericIdSupported
-          ? 'Enter Student ID (e.g. GJ-006175 or 006175)'
+          ? 'Enter Innoventure ID (e.g. GJ-006175 or 006175)'
           : 'Enter 10-digit student number (e.g. 1000123456)';
       case 'email':
-        return 'Enter email address (e.g. student@example.com)';
-      case 'name':
-        return 'Enter student name (e.g. Rahul Sharma)';
+        return 'Enter registered email (e.g. student@gmail.com)';
     }
   };
 
@@ -166,11 +166,11 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
             autoComplete="off"
             spellCheck="false"
             className={`w-full pl-11 pr-20 py-3.5 bg-white border rounded-xl text-base text-slate-900 placeholder:text-slate-400 placeholder:text-sm font-sans focus:outline-none transition-all shadow-sm ${
-              searchType === 'studentNumber' ? 'font-mono tracking-wider' : ''
+              searchType === 'studentNumber' && !isAlphanumericIdSupported ? 'font-mono tracking-wider' : ''
             } ${
               hasInteracted && query && !isSearchValid
                 ? 'border-amber-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10'
-                : 'border-slate-300 focus:border-brand-800 focus:ring-4 focus:ring-brand-800/10'
+                : 'border-slate-300 focus:border-brand-900 focus:ring-4 focus:ring-brand-900/10'
             }`}
           />
 
@@ -219,9 +219,9 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
           id="search-submit-button"
           onClick={handleSearchClick}
           disabled={!isSearchValid}
-          className={`px-7 py-3.5 rounded-xl font-bold text-sm tracking-wide uppercase flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 ${
+          className={`px-7 py-3.5 rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 ${
             isSearchValid
-              ? 'bg-brand-800 hover:bg-brand-900 text-white shadow-brand-900/20 cursor-pointer'
+              ? 'bg-brand-900 hover:bg-brand-950 text-white shadow-brand-950/20 cursor-pointer'
               : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed shadow-none'
           }`}
         >

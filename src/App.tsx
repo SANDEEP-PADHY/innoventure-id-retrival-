@@ -12,7 +12,6 @@ import { SearchBox } from './components/SearchBox';
 import { StudentResultCard } from './components/StudentResultCard';
 import { MultipleResultsList } from './components/MultipleResultsList';
 import { EmptyState } from './components/EmptyState';
-import { Shield } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [records, setRecords] = useState<NormalizedStudentRecord[]>([]);
@@ -20,8 +19,8 @@ export const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Search state
-  const [searchType, setSearchType] = useState<SearchType>('studentNumber');
+  // Search state — Primary search mode is 'name'
+  const [searchType, setSearchType] = useState<SearchType>('name');
   const [searchStatus, setSearchStatus] = useState<
     'idle' | 'success' | 'multiple-results' | 'no-results'
   >('idle');
@@ -68,7 +67,7 @@ export const App: React.FC = () => {
       setSelectedStudent(matches[0]);
       setMultipleResults([]);
     } else {
-      // Multiple matches (e.g. searching "Rahul" by name)
+      // Multiple matches (e.g. searching "Aarav" or "Aadhya" by name)
       setSearchStatus('multiple-results');
       setSelectedStudent(null);
       setMultipleResults(matches);
@@ -100,7 +99,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-brand-100 selection:text-brand-900">
-      {/* Institutional Header */}
+      {/* New Era School Header */}
       <Header
         metadata={metadata}
         isLoading={isLoading}
@@ -110,9 +109,9 @@ export const App: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8">
         {/* Search Control Card */}
-        <section className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-card mb-8">
+        <section className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-card mb-8">
           <div className="space-y-6">
-            {/* Search Type Selector (Full width, clean) */}
+            {/* Search Type Selector (Name Primary) */}
             <div className="border-b border-slate-100 pb-5">
               <SearchTypeSelector
                 selectedType={searchType}
@@ -167,15 +166,16 @@ export const App: React.FC = () => {
         </section>
       </main>
 
-      {/* Institutional Footer */}
-      <footer className="mt-auto border-t border-slate-200/80 bg-white py-4 px-4 sm:px-6">
+      {/* Official School Footer */}
+      <footer className="mt-auto border-t border-slate-200 bg-white py-4 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-          <div className="flex items-center gap-1.5 font-medium">
-            <Shield className="w-3.5 h-3.5 text-brand-800" />
-            <span>Controlled Internal Environment • Student Records Portal</span>
+          <div className="flex items-center gap-1.5 font-medium text-slate-700">
+            <span>© 2026 New Era Senior Secondary School, Vadodara</span>
+            <span className="text-slate-300">•</span>
+            <span>School Code: GJ-00039</span>
           </div>
           <div className="text-[11px] text-slate-400">
-            Powered by SheetJS • Dynamic Schema Ingestion
+            Innoventure Examination & Student Credentials Portal
           </div>
         </div>
       </footer>
