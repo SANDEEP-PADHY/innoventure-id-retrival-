@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import {
   SearchType,
   NormalizedStudentRecord,
@@ -99,6 +100,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-brand-100 selection:text-brand-900">
+      <Analytics />
       {/* New Era School Header */}
       <Header
         metadata={metadata}
