@@ -63,14 +63,15 @@ export const StudentResultCard: React.FC<StudentResultCardProps> = ({
     const l = label.toLowerCase();
     if (l.includes('pass') || l.includes('pwd')) return KeyRound;
     if (l.includes('email') || l.includes('mail')) return Mail;
-    if (l.includes('id') || l.includes('number') || l.includes('roll') || l.includes('s.no')) return Hash;
-    if (l.includes('class') || l.includes('grade') || l.includes('standard')) return BookOpen;
     if (l.includes('phone') || l.includes('mobile') || l.includes('contact')) return Phone;
+    if (l.includes('id') || l.includes('number') || l.includes('roll') || l.includes('s.no') || l.includes('sr.')) return Hash;
+    if (l.includes('class') || l.includes('grade') || l.includes('standard')) return BookOpen;
+    if (l.includes('course') || l.includes('certificate') || l.includes('progress') || l.includes('enrolled')) return Award;
     if (l.includes('house')) return Home;
     if (l.includes('bus') || l.includes('route') || l.includes('transport')) return Bus;
     if (l.includes('parent') || l.includes('father') || l.includes('mother') || l.includes('coordinator')) return Users;
-    if (l.includes('date') || l.includes('dob')) return Calendar;
-    if (l.includes('active') || l.includes('status') || l.includes('verified')) return CheckCircle2;
+    if (l.includes('date') || l.includes('dob') || l.includes('birth')) return Calendar;
+    if (l.includes('active') || l.includes('status') || l.includes('verified') || l.includes('account') || l.includes('whatsapp')) return CheckCircle2;
     return Layers;
   };
 
@@ -85,16 +86,26 @@ export const StudentResultCard: React.FC<StudentResultCardProps> = ({
         .toUpperCase()
     : 'ST';
 
-  // Find password and ID for featured top cards
+  // Find featured fields
   const passwordField = student.allFields.find(
-    (f) => f.key.toLowerCase().includes('pass') || f.key.toLowerCase().includes('pwd')
+    (f) => (f.key.toLowerCase().includes('pass') || f.key.toLowerCase().includes('pwd')) && f.value
   );
   const idField = student.allFields.find(
     (f) =>
       f.key.toLowerCase().includes('innoventure id') ||
+      f.key.toLowerCase().includes('innov id') ||
       f.key.toLowerCase().includes('student number') ||
       f.key.toLowerCase().includes('student no') ||
-      f.key.toLowerCase().includes('id')
+      f.key.toLowerCase() === 'id'
+  );
+  const primaryEmailField = student.allFields.find(
+    (f) => f.key.toLowerCase().includes('primary email') || f.key.toLowerCase() === 'email'
+  );
+  const primaryContactField = student.allFields.find(
+    (f) => f.key.toLowerCase().includes('primary contact') || f.key.toLowerCase().includes('phone') || f.key.toLowerCase().includes('mobile')
+  );
+  const courseStatusField = student.allFields.find(
+    (f) => f.key.toLowerCase().includes('course status')
   );
 
   return (
@@ -150,6 +161,13 @@ export const StudentResultCard: React.FC<StudentResultCardProps> = ({
                     <span>{student.email}</span>
                   </div>
                 )}
+
+                {student.phone && (
+                  <div className="flex items-center gap-1 text-slate-500 text-xs">
+                    <Phone className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{student.phone}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -191,12 +209,12 @@ export const StudentResultCard: React.FC<StudentResultCardProps> = ({
         </div>
       </div>
 
-      {/* Primary Credentials Highlight Box (Innoventure ID + Password) */}
+      {/* Primary Credentials Highlight Box */}
       <div className="p-6 sm:p-8 bg-slate-50/50 border-b border-slate-200">
         <div className="flex items-center gap-2 mb-3">
           <Award className="w-4 h-4 text-brand-800" />
           <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider font-sans">
-            Innoventure Login Credentials
+            Innoventure Primary Credentials
           </h3>
         </div>
 
@@ -230,34 +248,66 @@ export const StudentResultCard: React.FC<StudentResultCardProps> = ({
             </button>
           </div>
 
-          {/* Password */}
-          <div className="bg-white p-4 rounded-xl border border-amber-300/80 bg-gradient-to-r from-white to-amber-50/30 shadow-sm flex items-center justify-between gap-3">
-            <div>
-              <div className="text-[11px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1">
-                <span>Login Password</span>
+          {/* Password (if present) OR Primary Email / Contact */}
+          {passwordField && passwordField.value ? (
+            <div className="bg-white p-4 rounded-xl border border-amber-300/80 bg-gradient-to-r from-white to-amber-50/30 shadow-sm flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1">
+                  <span>Login Password</span>
+                </div>
+                <div className="font-mono text-lg font-bold text-slate-900 mt-0.5 tracking-wider">
+                  {passwordField.value}
+                </div>
               </div>
-              <div className="font-mono text-lg font-bold text-slate-900 mt-0.5 tracking-wider">
-                {passwordField?.value || student.password || '—'}
-              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  copyToClipboard(
+                    passwordField.value,
+                    'primary-password'
+                  )
+                }
+                className="p-2 text-slate-400 hover:text-amber-900 hover:bg-amber-100/50 rounded-lg transition-colors border border-transparent hover:border-amber-300"
+                title="Copy Password"
+              >
+                {copiedKey === 'primary-password' ? (
+                  <Check className="w-4 h-4 text-emerald-600" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() =>
-                copyToClipboard(
-                  passwordField?.value || student.password || '',
-                  'primary-password'
-                )
-              }
-              className="p-2 text-slate-400 hover:text-amber-900 hover:bg-amber-100/50 rounded-lg transition-colors border border-transparent hover:border-amber-300"
-              title="Copy Password"
-            >
-              {copiedKey === 'primary-password' ? (
-                <Check className="w-4 h-4 text-emerald-600" />
-              ) : (
-                <Copy className="w-4 h-4" />
+          ) : (
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  {primaryEmailField ? 'Primary Email' : primaryContactField ? 'Primary Contact' : 'Course Status'}
+                </div>
+                <div className="text-base font-bold text-slate-800 mt-0.5 truncate max-w-[220px]">
+                  {primaryEmailField?.value || primaryContactField?.value || courseStatusField?.value || 'Active'}
+                </div>
+              </div>
+              {(primaryEmailField?.value || primaryContactField?.value) && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyToClipboard(
+                      primaryEmailField?.value || primaryContactField?.value || '',
+                      'primary-secondary-field'
+                    )
+                  }
+                  className="p-2 text-slate-400 hover:text-brand-900 hover:bg-brand-50 rounded-lg transition-colors border border-transparent hover:border-brand-200"
+                  title="Copy"
+                >
+                  {copiedKey === 'primary-secondary-field' ? (
+                    <Check className="w-4 h-4 text-emerald-600" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </button>
               )}
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -269,12 +319,23 @@ export const StudentResultCard: React.FC<StudentResultCardProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {student.allFields.map((field, idx) => {
-            const isEmail =
-              field.key.toLowerCase().includes('email') ||
-              field.key.toLowerCase().includes('mail');
-            const isStatus =
-              field.key.toLowerCase().includes('activated') ||
-              field.key.toLowerCase().includes('verified');
+            const labelLower = field.label.toLowerCase();
+            const valLower = (field.value || '').toLowerCase().trim();
+
+            const isEmail = labelLower.includes('email') || labelLower.includes('mail');
+            const isPhone = labelLower.includes('contact') || labelLower.includes('phone') || labelLower.includes('mobile');
+            const isProgress = labelLower.includes('progress') && !isNaN(Number(field.value)) && field.value !== '';
+            
+            const isBooleanOrStatus =
+              labelLower.includes('active') ||
+              labelLower.includes('status') ||
+              labelLower.includes('verified') ||
+              labelLower.includes('whatsapp') ||
+              labelLower.includes('account') ||
+              valLower === 'yes' ||
+              valLower === 'no' ||
+              valLower === 'active' ||
+              valLower === 'inactive';
 
             const isCopied = copiedKey === field.key;
             const Icon = getFieldIcon(field.label);
@@ -290,7 +351,7 @@ export const StudentResultCard: React.FC<StudentResultCardProps> = ({
                     <span>{field.label}</span>
                   </div>
 
-                  {field.value && !isStatus && (
+                  {field.value && !isBooleanOrStatus && !isProgress && (
                     <button
                       type="button"
                       onClick={() => copyToClipboard(field.value, field.key)}
@@ -306,29 +367,56 @@ export const StudentResultCard: React.FC<StudentResultCardProps> = ({
                   )}
                 </div>
 
-                {/* Field Value */}
+                {/* Field Value Rendering */}
                 <div className="mt-1">
-                  {isStatus ? (
+                  {isProgress ? (
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1">
+                        <span>{field.value}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                        <div
+                          className="h-full bg-brand-800 rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(100, Math.max(0, Number(field.value)))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : isBooleanOrStatus && field.value ? (
                     <span
                       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        field.value.toLowerCase() === 'yes'
+                        valLower === 'yes' || valLower === 'active' || valLower === 'completed'
                           ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : valLower === 'in progress'
+                          ? 'bg-sky-50 text-sky-800 border border-sky-200'
+                          : valLower === 'not started' || valLower === 'not enrolled'
+                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
                           : 'bg-slate-100 text-slate-600 border border-slate-200'
                       }`}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          field.value.toLowerCase() === 'yes'
+                          valLower === 'yes' || valLower === 'active' || valLower === 'completed'
                             ? 'bg-emerald-500'
+                            : valLower === 'in progress'
+                            ? 'bg-sky-500'
+                            : valLower === 'not started' || valLower === 'not enrolled'
+                            ? 'bg-amber-500'
                             : 'bg-slate-400'
                         }`}
                       />
-                      {field.value || 'No'}
+                      {field.value}
                     </span>
                   ) : isEmail && field.value ? (
                     <a
                       href={`mailto:${field.value}`}
                       className="text-sm font-semibold text-brand-800 hover:text-brand-950 hover:underline break-all block"
+                    >
+                      {field.value}
+                    </a>
+                  ) : isPhone && field.value ? (
+                    <a
+                      href={`tel:${field.value}`}
+                      className="text-sm font-semibold text-brand-800 hover:text-brand-950 hover:underline break-all block font-mono"
                     >
                       {field.value}
                     </a>

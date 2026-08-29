@@ -1,6 +1,6 @@
 import React from 'react';
 import { NormalizedStudentRecord } from '../types/student';
-import { Users, Hash, Mail, ArrowRight, UserCheck } from 'lucide-react';
+import { Users, Hash, Mail, ArrowRight, UserCheck, Phone } from 'lucide-react';
 
 interface MultipleResultsListProps {
   students: NormalizedStudentRecord[];
@@ -29,7 +29,7 @@ export const MultipleResultsList: React.FC<MultipleResultsListProps> = ({
               Multiple Students Found
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Found <span className="font-bold text-slate-800">{students.length} students</span> matching &ldquo;<span className="text-brand-900 font-semibold">{query}</span>&rdquo;. Select the student below to view their password:
+              Found <span className="font-bold text-slate-800">{students.length} student records</span> matching &ldquo;<span className="text-brand-900 font-semibold">{query}</span>&rdquo;. Select the student below to view their details:
             </p>
           </div>
         </div>
@@ -68,6 +68,11 @@ export const MultipleResultsList: React.FC<MultipleResultsListProps> = ({
                         {student.section ? ` - ${student.section}` : ''}
                       </span>
                     )}
+                    {student.courseStatus && (
+                      <span className="px-2 py-0.5 text-[11px] font-medium bg-slate-100 text-slate-600 rounded border border-slate-200">
+                        {student.courseStatus}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-500">
@@ -80,6 +85,13 @@ export const MultipleResultsList: React.FC<MultipleResultsListProps> = ({
                       <span className="flex items-center gap-1">
                         <Mail className="w-3 h-3 text-slate-400" />
                         {student.email}
+                      </span>
+                    )}
+
+                    {student.phone && (
+                      <span className="flex items-center gap-1 font-mono">
+                        <Phone className="w-3 h-3 text-slate-400" />
+                        {student.phone}
                       </span>
                     )}
                   </div>

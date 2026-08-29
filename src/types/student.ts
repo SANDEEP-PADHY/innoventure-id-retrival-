@@ -16,10 +16,15 @@ export interface NormalizedStudentRecord {
   studentNumber: string;
   name: string;
   email: string;
+  altEmail?: string;
+  phone?: string;
+  altPhone?: string;
   password?: string;
   className?: string;
   section?: string;
   rollNo?: string;
+  status?: string;
+  courseStatus?: string;
   allFields: {
     key: string;
     label: string;

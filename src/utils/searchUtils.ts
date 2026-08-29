@@ -93,10 +93,16 @@ export function executeSearch(
 
   if (searchType === 'studentNumber') {
     const cleanQuery = trimmed.toLowerCase();
+    const cleanDigitsOrAlpha = cleanQuery.replace(/[^a-z0-9]/g, '');
     // Allow exact match or matching ID without prefix (e.g. searching 006175 matches GJ-006175)
     const exactMatches = records.filter((rec) => {
       const num = rec.studentNumber.trim().toLowerCase();
-      return num === cleanQuery || num.replace(/[^a-z0-9]/g, '') === cleanQuery.replace(/[^a-z0-9]/g, '');
+      const numClean = num.replace(/[^a-z0-9]/g, '');
+      return (
+        num === cleanQuery ||
+        numClean === cleanDigitsOrAlpha ||
+        (cleanDigitsOrAlpha.length >= 4 && numClean.endsWith(cleanDigitsOrAlpha))
+      );
     });
     return { matches: exactMatches, validation };
   }
@@ -104,7 +110,9 @@ export function executeSearch(
   if (searchType === 'email') {
     const cleanQuery = trimmed.toLowerCase();
     const exactMatches = records.filter(
-      (rec) => rec.email.trim().toLowerCase() === cleanQuery
+      (rec) =>
+        rec.email.trim().toLowerCase() === cleanQuery ||
+        (rec.altEmail && rec.altEmail.trim().toLowerCase() === cleanQuery)
     );
     return { matches: exactMatches, validation };
   }
@@ -159,19 +167,21 @@ export function getLiveSuggestions(
 
   if (searchType === 'studentNumber') {
     const cleanQuery = trimmed.toLowerCase();
+    const cleanDigits = cleanQuery.replace(/[^a-z0-9]/g, '');
     const exactMatches: NormalizedStudentRecord[] = [];
     const prefixMatches: NormalizedStudentRecord[] = [];
     const containsMatches: NormalizedStudentRecord[] = [];
 
     records.forEach((rec) => {
       const num = rec.studentNumber.trim().toLowerCase();
+      const numClean = num.replace(/[^a-z0-9]/g, '');
       if (!num) return;
 
-      if (num === cleanQuery) {
+      if (num === cleanQuery || numClean === cleanDigits) {
         exactMatches.push(rec);
-      } else if (num.startsWith(cleanQuery)) {
+      } else if (num.startsWith(cleanQuery) || numClean.startsWith(cleanDigits)) {
         prefixMatches.push(rec);
-      } else if (num.includes(cleanQuery)) {
+      } else if (num.includes(cleanQuery) || numClean.includes(cleanDigits)) {
         containsMatches.push(rec);
       }
     });
@@ -181,7 +191,7 @@ export function getLiveSuggestions(
     for (const rec of ordered) {
       if (suggestionMap.has(rec.studentNumber)) continue;
       
-      const classInfo = [rec.className ? `Class: ${rec.className}` : '', rec.section ? `Sec: ${rec.section}` : '', rec.rollNo ? `Roll: ${rec.rollNo}` : '']
+      const classInfo = [rec.className ? `Grade ${rec.className}` : '', rec.section ? `Sec ${rec.section}` : '', rec.rollNo ? `Sr ${rec.rollNo}` : '']
         .filter(Boolean)
         .join(' | ');
 
@@ -190,7 +200,7 @@ export function getLiveSuggestions(
         matchedText: rec.studentNumber,
         fullTitle: rec.studentNumber,
         subtitle: `${rec.name}${classInfo ? ` • ${classInfo}` : ''}`,
-        badge: rec.className ? `Class ${rec.className}` : undefined,
+        badge: rec.className ? `Grade ${rec.className}` : undefined,
         record: rec,
       });
 
@@ -198,35 +208,40 @@ export function getLiveSuggestions(
     }
   } else if (searchType === 'email') {
     const cleanQuery = trimmed.toLowerCase();
-    const exactMatches: NormalizedStudentRecord[] = [];
-    const prefixMatches: NormalizedStudentRecord[] = [];
-    const domainMatches: NormalizedStudentRecord[] = [];
+    const exactMatches: { rec: NormalizedStudentRecord; em: string }[] = [];
+    const prefixMatches: { rec: NormalizedStudentRecord; em: string }[] = [];
+    const domainMatches: { rec: NormalizedStudentRecord; em: string }[] = [];
 
     records.forEach((rec) => {
-      const email = rec.email.trim().toLowerCase();
-      if (!email) return;
+      const emails = [rec.email, rec.altEmail].filter(Boolean) as string[];
+      
+      for (const rawEmail of emails) {
+        const email = rawEmail.trim().toLowerCase();
+        if (!email) continue;
 
-      if (email === cleanQuery) {
-        exactMatches.push(rec);
-      } else if (email.startsWith(cleanQuery)) {
-        prefixMatches.push(rec);
-      } else if (email.includes(cleanQuery)) {
-        domainMatches.push(rec);
+        if (email === cleanQuery) {
+          exactMatches.push({ rec, em: rawEmail });
+        } else if (email.startsWith(cleanQuery)) {
+          prefixMatches.push({ rec, em: rawEmail });
+        } else if (email.includes(cleanQuery)) {
+          domainMatches.push({ rec, em: rawEmail });
+        }
       }
     });
 
     const ordered = [...exactMatches, ...prefixMatches, ...domainMatches];
 
-    for (const rec of ordered) {
-      if (suggestionMap.has(rec.email.toLowerCase())) continue;
+    for (const item of ordered) {
+      const key = `${item.em.toLowerCase()}-${item.rec.id}`;
+      if (suggestionMap.has(key)) continue;
 
-      suggestionMap.set(rec.email.toLowerCase(), {
-        id: rec.id,
-        matchedText: rec.email,
-        fullTitle: rec.email,
-        subtitle: `${rec.name} (${rec.studentNumber})`,
-        badge: rec.className ? `Class ${rec.className}` : undefined,
-        record: rec,
+      suggestionMap.set(key, {
+        id: item.rec.id,
+        matchedText: item.em,
+        fullTitle: item.em,
+        subtitle: `${item.rec.name} (${item.rec.studentNumber})`,
+        badge: item.rec.className ? `Grade ${item.rec.className}` : undefined,
+        record: item.rec,
       });
 
       if (suggestionMap.size >= maxSuggestions) break;

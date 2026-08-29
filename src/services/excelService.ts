@@ -82,29 +82,67 @@ export function parseExcelBuffer(
   let idCol = allColumnKeys.find((k) => {
     const ck = cleanKey(k);
     return (
+      ck === 'innovid' ||
+      ck === 'innoventureid' ||
       ck === 'studentnumber' ||
       ck === 'studentno' ||
       ck === 'studentid' ||
-      ck === 'innoventureid' ||
       ck === 'enrollmentno' ||
       ck === 'admissionno' ||
-      ck === 'id'
+      ck === 'id' ||
+      (ck.includes('innov') && ck.includes('id')) ||
+      (ck.includes('student') && ck.includes('id'))
     );
   });
 
   let nameCol = allColumnKeys.find((k) => {
     const ck = cleanKey(k);
-    return ck === 'name' || ck === 'studentname' || ck === 'fullname' || ck === 'candidatename';
+    return (
+      ck === 'studentname' ||
+      ck === 'name' ||
+      ck === 'fullname' ||
+      ck === 'candidatename' ||
+      ck === 'student'
+    );
   });
 
   let emailCol = allColumnKeys.find((k) => {
     const ck = cleanKey(k);
     return (
+      ck === 'primaryemail' ||
       ck === 'email' ||
       ck === 'emailid' ||
       ck === 'studentemail' ||
       ck === 'emailaddress' ||
       ck === 'mail'
+    );
+  });
+
+  let altEmailCol = allColumnKeys.find((k) => {
+    const ck = cleanKey(k);
+    return ck === 'altemail' || ck === 'alternateemail' || ck === 'secondaryemail';
+  });
+
+  let phoneCol = allColumnKeys.find((k) => {
+    const ck = cleanKey(k);
+    return (
+      ck === 'primarycontact' ||
+      ck === 'phone' ||
+      ck === 'contact' ||
+      ck === 'mobile' ||
+      ck === 'phonenumber' ||
+      ck === 'contactnumber' ||
+      ck === 'mobilenumber'
+    );
+  });
+
+  let altPhoneCol = allColumnKeys.find((k) => {
+    const ck = cleanKey(k);
+    return (
+      ck === 'altcontact' ||
+      ck === 'alternatecontact' ||
+      ck === 'altphone' ||
+      ck === 'secondarycontact'
     );
   });
 
@@ -115,7 +153,7 @@ export function parseExcelBuffer(
 
   let classCol = allColumnKeys.find((k) => {
     const ck = cleanKey(k);
-    return ck === 'class' || ck === 'grade' || ck === 'standard' || ck === 'std';
+    return ck === 'grade' || ck === 'class' || ck === 'standard' || ck === 'std';
   });
 
   let sectionCol = allColumnKeys.find((k) => {
@@ -126,6 +164,8 @@ export function parseExcelBuffer(
   let rollNoCol = allColumnKeys.find((k) => {
     const ck = cleanKey(k);
     return (
+      ck === 'sr' ||
+      ck === 'srno' ||
       ck === 'rollno' ||
       ck === 'rollnumber' ||
       ck === 'sno' ||
@@ -133,10 +173,20 @@ export function parseExcelBuffer(
     );
   });
 
+  let statusCol = allColumnKeys.find((k) => {
+    const ck = cleanKey(k);
+    return ck === 'status' || ck === 'account' || ck === 'activated';
+  });
+
+  let courseStatusCol = allColumnKeys.find((k) => {
+    const ck = cleanKey(k);
+    return ck === 'coursestatus' || ck === 'course';
+  });
+
   // Fallbacks if not detected by strict keywords
-  if (!idCol && allColumnKeys.length > 0) idCol = allColumnKeys[0];
-  if (!nameCol && allColumnKeys.length > 1) nameCol = allColumnKeys[1];
-  if (!emailCol && allColumnKeys.length > 2) emailCol = allColumnKeys[2];
+  if (!idCol && allColumnKeys.length > 0) idCol = allColumnKeys.find((k) => cleanKey(k).includes('id')) || allColumnKeys[0];
+  if (!nameCol && allColumnKeys.length > 1) nameCol = allColumnKeys.find((k) => cleanKey(k).includes('name')) || allColumnKeys[1];
+  if (!emailCol && allColumnKeys.length > 2) emailCol = allColumnKeys.find((k) => cleanKey(k).includes('email') || cleanKey(k).includes('mail')) || allColumnKeys[2];
 
   const records: NormalizedStudentRecord[] = [];
 
@@ -148,10 +198,15 @@ export function parseExcelBuffer(
     const studentNumber = idCol ? formatCellValue(row[idCol]) : `STU-${index + 1}`;
     const name = nameCol ? formatCellValue(row[nameCol]) : `Student ${index + 1}`;
     const email = emailCol ? formatCellValue(row[emailCol]) : '';
+    const altEmail = altEmailCol ? formatCellValue(row[altEmailCol]) : undefined;
+    const phone = phoneCol ? formatCellValue(row[phoneCol]) : undefined;
+    const altPhone = altPhoneCol ? formatCellValue(row[altPhoneCol]) : undefined;
     const password = passwordCol ? formatCellValue(row[passwordCol]) : undefined;
     const className = classCol ? formatCellValue(row[classCol]) : undefined;
     const section = sectionCol ? formatCellValue(row[sectionCol]) : undefined;
     const rollNo = rollNoCol ? formatCellValue(row[rollNoCol]) : undefined;
+    const status = statusCol ? formatCellValue(row[statusCol]) : undefined;
+    const courseStatus = courseStatusCol ? formatCellValue(row[courseStatusCol]) : undefined;
 
     // Dynamically build all fields preserving the exact column names
     const allFields = allColumnKeys.map((colKey) => ({
@@ -166,10 +221,15 @@ export function parseExcelBuffer(
       studentNumber,
       name,
       email,
+      altEmail,
+      phone,
+      altPhone,
       password,
       className,
       section,
       rollNo,
+      status,
+      courseStatus,
       allFields,
     });
   });
@@ -193,21 +253,23 @@ export async function loadHardcodedExcelDatabase(): Promise<{
   records: NormalizedStudentRecord[];
   metadata: DatabaseMetadata;
 }> {
-  try {
-    const response = await fetch(HARDCODED_EXCEL_PATH);
-    if (response.ok) {
-      const buffer = await response.arrayBuffer();
-      return parseExcelBuffer(buffer, 'students.xlsx');
-    }
-  } catch (err) {
-    // try fallback candidate if needed
-  }
+  const candidatePaths = [
+    HARDCODED_EXCEL_PATH,
+    '/assets/students-2026-08-29.xlsx',
+    '/assets/Students_AllGrades_2026-08-27.xlsx',
+  ];
 
-  // Secondary internal fallback if students.xlsx is not reachable
-  const fallbackResponse = await fetch('/assets/Students_AllGrades_2026-08-27.xlsx');
-  if (fallbackResponse.ok) {
-    const buffer = await fallbackResponse.arrayBuffer();
-    return parseExcelBuffer(buffer, 'students.xlsx');
+  for (const path of candidatePaths) {
+    try {
+      const response = await fetch(path);
+      if (response.ok) {
+        const buffer = await response.arrayBuffer();
+        const fileName = path.split('/').pop() || 'students.xlsx';
+        return parseExcelBuffer(buffer, fileName);
+      }
+    } catch (err) {
+      // try next candidate
+    }
   }
 
   throw new Error('Unable to load student database from /assets/ folder.');
