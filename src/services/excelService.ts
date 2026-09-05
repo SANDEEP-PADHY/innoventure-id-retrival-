@@ -215,11 +215,14 @@ export function parseExcelBuffer(
       ? formatCellValue(row[courseStatusCol])
       : undefined;
     const normalizedCourseStatus = rawCourseStatus?.toLowerCase();
+    const normalizedAccountStatus = status?.toLowerCase();
     const courseStatus =
-      normalizedCourseStatus === 'yes'
+      normalizedCourseStatus === 'yes' || normalizedCourseStatus?.includes('completed')
         ? 'Completed'
-        : normalizedCourseStatus === 'no'
-          ? 'Not Started'
+        : normalizedAccountStatus === 'yes' || normalizedAccountStatus === 'active'
+          ? 'In Progress'
+          : normalizedCourseStatus === 'no'
+            ? 'Not Enrolled'
           : rawCourseStatus;
 
     // Dynamically build all fields preserving the exact column names
