@@ -40,7 +40,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           Unable to load student database
         </h3>
         <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-          Please ensure <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-800 font-mono text-xs">/assets/students.xlsx</code> is present in the project folder.
+          Please ensure <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-800 font-mono text-xs">/assets/db.xlsx</code> is present in the project folder.
         </p>
         {errorMessage && (
           <p className="mt-2 text-xs text-slate-400 font-mono max-w-sm mx-auto">

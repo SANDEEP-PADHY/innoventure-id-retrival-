@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 import { NormalizedStudentRecord, DatabaseMetadata } from '../types/student';
 
 // Hardcoded static Excel database path
-export const HARDCODED_EXCEL_PATH = '/assets/students.xlsx';
+export const HARDCODED_EXCEL_PATH = new URL('../../assets/db.xlsx', import.meta.url).href;
 
 /**
  * Normalizes a column name for fuzzy key detection (e.g. "Student Name" -> "studentname")
@@ -180,7 +180,12 @@ export function parseExcelBuffer(
 
   let courseStatusCol = allColumnKeys.find((k) => {
     const ck = cleanKey(k);
-    return ck === 'coursestatus' || ck === 'course';
+    return (
+      ck === 'coursestatus' ||
+      ck === 'course' ||
+      ck === 'coursecompleted' ||
+      (ck.includes('course') && ck.includes('completed'))
+    );
   });
 
   // Fallbacks if not detected by strict keywords
@@ -206,7 +211,16 @@ export function parseExcelBuffer(
     const section = sectionCol ? formatCellValue(row[sectionCol]) : undefined;
     const rollNo = rollNoCol ? formatCellValue(row[rollNoCol]) : undefined;
     const status = statusCol ? formatCellValue(row[statusCol]) : undefined;
-    const courseStatus = courseStatusCol ? formatCellValue(row[courseStatusCol]) : undefined;
+    const rawCourseStatus = courseStatusCol
+      ? formatCellValue(row[courseStatusCol])
+      : undefined;
+    const normalizedCourseStatus = rawCourseStatus?.toLowerCase();
+    const courseStatus =
+      normalizedCourseStatus === 'yes'
+        ? 'Completed'
+        : normalizedCourseStatus === 'no'
+          ? 'Not Started'
+          : rawCourseStatus;
 
     // Dynamically build all fields preserving the exact column names
     const allFields = allColumnKeys.map((colKey) => ({
@@ -247,7 +261,7 @@ export function parseExcelBuffer(
 }
 
 /**
- * Loads the hardcoded student database directly from /assets/students.xlsx
+ * Loads the hardcoded student database directly from /assets/db.xlsx
  */
 export async function loadHardcodedExcelDatabase(): Promise<{
   records: NormalizedStudentRecord[];
@@ -255,6 +269,7 @@ export async function loadHardcodedExcelDatabase(): Promise<{
 }> {
   const candidatePaths = [
     HARDCODED_EXCEL_PATH,
+    '/assets/students.xlsx',
     '/assets/students-2026-08-29.xlsx',
     '/assets/Students_AllGrades_2026-08-27.xlsx',
   ];
